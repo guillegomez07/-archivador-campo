@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Archivador de Campo</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<meta name="theme-color" content="#2F5A73">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Archivador">
+<link rel="manifest" href="manifest.json">
+
+<style>
+  :root{
+    --ink:#1E2624;
+    --ink-soft:#4A5450;
+    --canvas:#E3E0D0;
+    --panel:#EEEBDC;
+    --panel-raised:#F6F4E8;
+    --line:#C7C1A6;
+    --accent:#2F5A73;
+    --accent-ink:#12242E;
+    --mustard:#C79A2B;
+    --rust:#A6412B;
+    --moss:#5C7A5E;
+    --slate:#5A6570;
+    --plum:#6B4E71;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--canvas);
+    color:var(--ink);
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+  }
+  #app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    background:var(--canvas);
+    position:relative;
+    padding-bottom:96px;
+  }
+  h1,h2,.display{
+    font-family:Georgia, 'Times New Roman', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  header{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:var(--canvas);
+    padding:20px 18px 14px;
+    border-bottom:1px solid var(--line);
+  }
+  header .row-top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+  }
+  header h1{font-size:22px;}
+  header .count{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .icon-btn{
+    background:none;
+    border:none;
+    padding:6px;
+    cursor:pointer;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .search-wrap{
+    margin-top:12px;
+    position:relative;
+  }
+  .search-wrap input{
+    width:100%;
+    padding:10px 12px 10px 34px;
+    border:1px solid var(--line);
+    background:var(--panel-raised);
+    border-radius:6px;
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .search-wrap svg{
+    position:absolute;
+    left:10px;
+    top:50%;
+    transform:translateY(-50%);
+    opacity:0.55;
+  }
+  .search-wrap input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+
+  main{padding:8px 0 12px;}
+
+  .empty-state{
+    padding:60px 30px;
+    text-align:center;
+    color:var(--ink-soft);
+  }
+  .empty-state svg{opacity:0.35;margin-bottom:14px;}
+  .empty-state p{font-size:14px;line-height:1.5;margin:0;}
+
+  .ref-row{
+    display:flex;
+    align-items:stretch;
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+    background:var(--canvas);
+    transition:background 0.15s;
+  }
+  .ref-row:active{background:var(--panel);}
+  .ref-bar{width:6px;flex-shrink:0;}
+  .ref-body{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 14px;
+    min-width:0;
+  }
+  .ref-icon{
+    width:38px;height:38px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    background:var(--panel);
+    border:1px solid var(--line);
+  }
+  .ref-info{flex:1;min-width:0;}
+  .ref-name{font-family:Georgia, 'Times New Roman', serif;font-weight:600;font-size:15.5px;}
+  .ref-meta{font-size:12.5px;color:var(--ink-soft);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;}
+  .ref-count{font-size:12.5px;color:var(--ink-soft);white-space:nowrap;flex-shrink:0;}
+  .ref-chev{opacity:0.4;flex-shrink:0;}
+
+  .fab{
+    position:fixed;
+    bottom:24px;
+    left:50%;
+    transform:translateX(calc(-50% + 190px));
+    width:56px;height:56px;
+    border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 3px 10px rgba(18,36,46,0.35);
+    cursor:pointer;
+    z-index:25;
+  }
+  @media (max-width:480px){
+    .fab{left:auto;right:20px;transform:none;}
+  }
+
+  /* Detail view */
+  .detail-header{padding:16px 18px 14px;border-bottom:1px solid var(--line);}
+  .back-row{display:flex;align-items:center;gap:6px;margin-bottom:14px;}
+  .back-row span{font-size:14px;color:var(--ink-soft);}
+  .detail-title-row{display:flex;align-items:center;gap:12px;}
+  .detail-info{flex:1;min-width:0;}
+  .detail-name{font-size:20px;}
+  .detail-meta{font-size:13px;color:var(--ink-soft);margin-top:4px;line-height:1.5;}
+  .detail-actions{display:flex;gap:8px;margin-top:14px;}
+  .text-btn{
+    background:none;border:none;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size:12.5px;color:var(--ink-soft);cursor:pointer;padding:4px 0;
+    text-decoration:underline;text-underline-offset:3px;
+  }
+  .text-btn.danger{color:var(--rust);}
+
+  .capture-row{
+    display:flex;flex-direction:column;align-items:center;
+    gap:8px;padding:28px 18px 22px;border-bottom:1px solid var(--line);
+  }
+  .capture-main{
+    width:100px;height:100px;border-radius:50%;
+    background:var(--accent);color:#fff;border:none;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 5px 16px rgba(18,36,46,0.32);
+    cursor:pointer;
+  }
+  .capture-main:active{transform:scale(0.96);}
+  .capture-label{
+    font-family:Georgia, 'Times New Roman', serif;font-weight:600;font-size:14.5px;
+    color:var(--ink);margin-top:2px;
+  }
+  .capture-secondary{
+    margin-top:8px;background:none;border:none;
+    display:flex;align-items:center;gap:6px;
+    color:var(--ink-soft);font-size:13px;
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;cursor:pointer;
+    text-decoration:underline;text-underline-offset:3px;
+    padding:6px 8px;
+  }
+  .capture-btn{
+    flex:1;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:13px 10px;
+    border-radius:6px;
+    border:1px solid var(--line);
+    background:var(--panel-raised);
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-weight:500;
+    font-size:13.5px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .capture-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  .photo-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:3px;
+    padding:3px;
+  }
+  .photo-thumb{
+    aspect-ratio:1;
+    position:relative;
+    overflow:hidden;
+    cursor:pointer;
+    background:var(--panel);
+  }
+  .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo-empty{padding:50px 30px;text-align:center;color:var(--ink-soft);}
+  .photo-empty p{font-size:13.5px;line-height:1.5;margin:10px 0 0;}
+
+  /* Overlay / sheet */
+  .overlay{
+    position:fixed;inset:0;
+    background:rgba(18,24,22,0.55);
+    z-index:40;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .sheet{
+    width:100%;max-width:480px;
+    background:var(--canvas);
+    border-radius:14px 14px 0 0;
+    padding:22px 20px calc(22px + env(safe-area-inset-bottom));
+    max-height:88vh;
+    overflow-y:auto;
+  }
+  .sheet h2{font-size:18px;margin-bottom:16px;}
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;font-size:12px;text-transform:none;color:var(--ink-soft);
+    margin-bottom:6px;font-weight:500;
+  }
+  .field input{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    background:var(--panel-raised);
+    border-radius:6px;
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size:15px;
+    color:var(--ink);
+  }
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .icon-grid{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+  }
+  .icon-choice{
+    aspect-ratio:1;border-radius:50%;
+    border:1.5px solid var(--line);
+    background:var(--panel-raised);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:var(--ink-soft);
+  }
+  .icon-choice.selected{border-color:var(--accent);background:var(--accent);color:#fff;}
+  .swatch-row{display:flex;gap:10px;}
+  .swatch{
+    width:32px;height:32px;border-radius:50%;
+    cursor:pointer;border:2.5px solid transparent;
+  }
+  .swatch.selected{border-color:var(--ink);}
+  .sheet-actions{display:flex;gap:10px;margin-top:8px;}
+  .btn{
+    flex:1;padding:13px;border-radius:6px;border:1px solid var(--line);
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;font-weight:500;font-size:14.5px;
+    cursor:pointer;background:var(--panel-raised);color:var(--ink);
+  }
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .btn:disabled{opacity:0.5;cursor:default;}
+  .error-text{color:var(--rust);font-size:12.5px;margin-top:-8px;margin-bottom:14px;}
+
+  /* Lightbox */
+  .lightbox{
+    position:fixed;inset:0;background:rgba(10,14,13,0.92);
+    z-index:60;display:flex;flex-direction:column;
+  }
+  .lightbox-top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;}
+  .lightbox-top button{color:#fff;}
+  .lightbox-counter{color:#DCD8C8;font-size:12.5px;align-self:center;}
+  .lightbox-img-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:0 10px;position:relative;touch-action:pan-y;}
+  .lightbox-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;user-select:none;-webkit-user-drag:none;}
+  .lightbox-nav{
+    position:absolute;top:50%;transform:translateY(-50%);
+    width:46px;height:46px;border-radius:50%;
+    background:rgba(255,255,255,0.12);border:none;color:#fff;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .lightbox-nav:disabled{opacity:0;pointer-events:none;}
+  .lightbox-nav.prev{left:6px;}
+  .lightbox-nav.next{right:6px;}
+  .lightbox-meta{color:#DCD8C8;font-size:12.5px;text-align:center;padding:10px 16px 24px;}
+
+  .spinner{
+    width:22px;height:22px;border-radius:50%;
+    border:2.5px solid var(--line);border-top-color:var(--accent);
+    animation:spin 0.7s linear infinite;margin:40px auto;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:var(--canvas);padding:10px 18px;
+    border-radius:20px;font-size:13px;z-index:80;
+    box-shadow:0 3px 10px rgba(0,0,0,0.25);
+  }
+  input[type=file]{display:none;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const ICONS = {
+  pin: '<path d="M12 2C8 2 5 5 5 9c0 5.5 7 13 7 13s7-7.5 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.3"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="M14.8 9.2l-2 5.6-5.6 2 2-5.6z"/>',
+  wrench: '<path d="M14.7 6.3a4 4 0 00-5.4 5l-6 6a1.4 1.4 0 002 2l6-6a4 4 0 005-5.4l-2.3 2.3-2-2z"/>',
+  bolt: '<path d="M13 2 4 14h6l-1 8 9-12h-6z"/>',
+  tree: '<path d="M12 2 6 10h3l-5 7h5v5h6v-5h5l-5-7h3z"/>',
+  drop: '<path d="M12 2s6 7.5 6 12a6 6 0 01-12 0c0-4.5 6-12 6-12z"/>',
+  flag: '<path d="M5 3v18M5 4h11l-2.5 4L16 12H5"/>',
+  mountain: '<path d="M3 19 9 8l4 6 2-3 6 8z"/>',
+  building: '<rect x="5" y="3" width="14" height="18"/><path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1"/>',
+  camera: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7l1.5-2.5h3L15 7"/><circle cx="12" cy="13.5" r="3.2"/>'
+};
+const ICON_KEYS = Object.keys(ICONS);
+function iconSvg(key, size=18, strokeW=1.8){
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeW}" stroke-linecap="round" stroke-linejoin="round">${ICONS[key]||ICONS.pin}</svg>`;
+}
+const COLORS = [
+  {key:'accent', hex:'#2F5A73'},
+  {key:'mustard', hex:'#C79A2B'},
+  {key:'moss', hex:'#5C7A5E'},
+  {key:'rust', hex:'#A6412B'},
+  {key:'slate', hex:'#5A6570'},
+  {key:'plum', hex:'#6B4E71'}
+];
+function colorHex(key){ const c = COLORS.find(c=>c.key===key); return c ? c.hex : '#2F5A73'; }
+
+let state = {
+  loading: true,
+  refs: [],
+  photosByRef: {},
+  loadingPhotos: false,
+  view: 'list',
+  activeRefId: null,
+  search: '',
+  showNewSheet: false,
+  showEditSheet: false,
+  editingId: null,
+  form: {name:'', date:'', place:'', icon:'pin', color:'accent'},
+  saving: false,
+  formError: '',
+  lightboxPhoto: null,
+  toast: ''
+};
+
+function todayISO(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+function fmtDate(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function slug(s){
+  return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'').slice(0,40) || 'SinDato';
+}
+
+/* ---------- Almacenamiento local del dispositivo (IndexedDB) ---------- */
+let dbPromise = null;
+function openDb(){
+  if(dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve,reject)=>{
+    const req = indexedDB.open('archivador-campo-db', 1);
+    req.onupgradeneeded = ()=>{
+      const db = req.result;
+      if(!db.objectStoreNames.contains('refs')) db.createObjectStore('refs', {keyPath:'id'});
+      if(!db.objectStoreNames.contains('photos')) db.createObjectStore('photos', {keyPath:'id'}).createIndex('refId','refId',{unique:false});
+    };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+  return dbPromise;
+}
+async function idbGetAll(storeName, indexName, indexValue){
+  const db = await openDb();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(storeName,'readonly');
+    const store = tx.objectStore(storeName);
+    const source = indexName ? store.index(indexName) : store;
+    const req = indexValue!==undefined ? source.getAll(indexValue) : source.getAll();
+    req.onsuccess = ()=> resolve(req.result||[]);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbPut(storeName, value){
+  const db = await openDb();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(storeName,'readwrite');
+    tx.objectStore(storeName).put(value);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+async function idbDelete(storeName, id){
+  const db = await openDb();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(storeName,'readwrite');
+    tx.objectStore(storeName).delete(id);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+async function idbDeleteByIndex(storeName, indexName, indexValue){
+  const db = await openDb();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(storeName,'readwrite');
+    const store = tx.objectStore(storeName);
+    const idx = store.index(indexName);
+    const req = idx.openCursor(IDBKeyRange.only(indexValue));
+    req.onsuccess = ()=>{
+      const cursor = req.result;
+      if(cursor){ store.delete(cursor.primaryKey); cursor.continue(); }
+    };
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+
+async function loadRefs(){
+  state.loading = true; render();
+  try{
+    const list = await idbGetAll('refs');
+    state.refs = list.sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
+  }catch(e){
+    state.refs = [];
+    showToast('No se pudo leer el almacenamiento local del dispositivo.');
+  }
+  state.loading = false;
+  render();
+}
+
+async function saveRef(ref){
+  try{
+    await idbPut('refs', ref);
+  }catch(e){
+    showToast('No se pudo guardar en el dispositivo. Intenta de nuevo.');
+  }
+}
+
+async function loadPhotos(refId){
+  state.loadingPhotos = true; render();
+  try{
+    const list = await idbGetAll('photos','refId',refId);
+    state.photosByRef[refId] = list.sort((a,b)=>a.ts-b.ts);
+  }catch(e){
+    state.photosByRef[refId] = [];
+  }
+  state.loadingPhotos = false;
+  render();
+}
+
+async function savePhotoRecord(photo){
+  try{
+    await idbPut('photos', photo);
+  }catch(e){
+    showToast('No se pudo guardar la miniatura en el dispositivo.');
+  }
+}
+
+/* Descarga el archivo original (calidad completa) a la carpeta de Descargas del celular */
+function downloadOriginalFile(file, filename){
+  const url = URL.createObjectURL(file);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=> URL.revokeObjectURL(url), 4000);
+}
+
+function showToast(msg){
+  state.toast = msg;
+  render();
+  setTimeout(()=>{ state.toast=''; render(); }, 2200);
+}
+
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e => { img.src = e.target.result; };
+    reader.onerror = reject;
+    img.onload = () => {
+      const maxDim = 1000;
+      let {width,height} = img;
+      if(width>height && width>maxDim){ height=height*(maxDim/width); width=maxDim; }
+      else if(height>maxDim){ width=width*(maxDim/height); height=maxDim; }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0,width,height);
+      resolve(canvas.toDataURL('image/jpeg', 0.6));
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handlePhotoFiles(refId, fileList){
+  const files = Array.from(fileList);
+  if(!files.length) return;
+  const ref = state.refs.find(r=>r.id===refId);
+  showToast(files.length>1 ? 'Guardando fotos en el dispositivo...' : 'Guardando foto en el dispositivo...');
+  if(!state.photosByRef[refId]) state.photosByRef[refId] = [];
+  const existingCount = state.photosByRef[refId].length;
+  let i = 0;
+  for(const file of files){
+    i++;
+    try{
+      const thumbUrl = await compressImage(file);
+      const ext = (file.type && file.type.includes('png')) ? 'png' : 'jpg';
+      const filename = `${slug(ref.name)}_${ref.date}_${slug(ref.place)}_${existingCount+i}.${ext}`;
+      const photo = {id:uid(), refId, dataUrl:thumbUrl, ts:Date.now(), filename};
+      state.photosByRef[refId].push(photo);
+      await savePhotoRecord(photo);
+      downloadOriginalFile(file, filename);
+    }catch(e){ /* omitir archivo con error */ }
+  }
+  render();
+  showToast(files.length>1 ? 'Fotos guardadas en Descargas' : 'Foto guardada en Descargas');
+}
+
+function openNewSheet(){
+  state.form = {name:'', date:todayISO(), place:'', icon:'pin', color:'accent'};
+  state.formError='';
+  state.showNewSheet = true;
+  state.showEditSheet = false;
+  render();
+}
+function openEditSheet(ref){
+  state.form = {name:ref.name, date:ref.date, place:ref.place, icon:ref.icon, color:ref.color};
+  state.editingId = ref.id;
+  state.formError='';
+  state.showEditSheet = true;
+  state.showNewSheet = false;
+  render();
+}
+function closeSheets(){
+  state.showNewSheet=false; state.showEditSheet=false; state.editingId=null;
+  render();
+}
+
+async function submitNewRef(){
+  if(!state.form.name.trim()){ state.formError='Ingresa un nombre o código de referencia.'; render(); return; }
+  state.saving = true; render();
+  const ref = {
+    id: uid(),
+    name: state.form.name.trim(),
+    date: state.form.date || todayISO(),
+    place: state.form.place.trim(),
+    icon: state.form.icon,
+    color: state.form.color,
+    createdAt: Date.now()
+  };
+  state.refs.unshift(ref);
+  await saveRef(ref);
+  state.saving = false;
+  state.showNewSheet = false;
+  render();
+}
+
+async function submitEditRef(){
+  if(!state.form.name.trim()){ state.formError='Ingresa un nombre o código de referencia.'; render(); return; }
+  state.saving = true; render();
+  const idx = state.refs.findIndex(r=>r.id===state.editingId);
+  if(idx>-1){
+    state.refs[idx] = {...state.refs[idx], name:state.form.name.trim(), date:state.form.date, place:state.form.place.trim(), icon:state.form.icon, color:state.form.color};
+    await saveRef(state.refs[idx]);
+  }
+  state.saving = false;
+  state.showEditSheet = false;
+  render();
+}
+
+async function deleteRef(refId){
+  state.refs = state.refs.filter(r=>r.id!==refId);
+  await idbDelete('refs', refId);
+  await idbDeleteByIndex('photos','refId',refId);
+  delete state.photosByRef[refId];
+  state.view = 'list';
+  state.activeRefId = null;
+  render();
+  showToast('Referencia eliminada del dispositivo (las fotos ya descargadas permanecen en tu carpeta de Descargas)');
+}
+
+async function deletePhoto(refId, photoId){
+  state.photosByRef[refId] = (state.photosByRef[refId]||[]).filter(p=>p.id!==photoId);
+  render();
+  await idbDelete('photos', photoId);
+}
+
+function openRef(refId){
+  state.activeRefId = refId;
+  state.view = 'detail';
+  render();
+  if(!state.photosByRef[refId]){
+    loadPhotos(refId);
+  }
+}
+
+function goList(){
+  state.view = 'list';
+  state.activeRefId = null;
+  render();
+}
+
+function filteredRefs(){
+  const q = state.search.trim().toLowerCase();
+  if(!q) return state.refs;
+  return state.refs.filter(r =>
+    r.name.toLowerCase().includes(q) ||
+    (r.place||'').toLowerCase().includes(q) ||
+    fmtDate(r.date).toLowerCase().includes(q)
+  );
+}
+
+function totalPhotoCountKnown(){
+  return Object.values(state.photosByRef).reduce((a,arr)=>a+arr.length,0);
+}
+
+function renderListView(){
+  const refs = filteredRefs();
+  let rows = '';
+  if(state.loading){
+    rows = `<div class="spinner"></div>`;
+  } else if(refs.length===0 && state.refs.length===0){
+    rows = `<div class="empty-state">
+      ${iconSvg('camera',40,1.3)}
+      <p>Aún no tienes referencias archivadas.<br>Toca el botón + para crear la primera y empezar a guardar fotos de campo.</p>
+    </div>`;
+  } else if(refs.length===0){
+    rows = `<div class="empty-state"><p>No se encontraron referencias que coincidan con "${escapeHtml(state.search)}".</p></div>`;
+  } else {
+    rows = refs.map(r=>{
+      const count = state.photosByRef[r.id] ? state.photosByRef[r.id].length : null;
+      const countLabel = count===null ? '' : (count===1?'1 foto':count+' fotos');
+      return `<div class="ref-row" data-open="${r.id}">
+        <div class="ref-bar" style="background:${colorHex(r.color)}"></div>
+        <div class="ref-body">
+          <div class="ref-icon" style="color:${colorHex(r.color)}">${iconSvg(r.icon,19)}</div>
+          <div class="ref-info">
+            <div class="ref-name">${escapeHtml(r.name)}</div>
+            <div class="ref-meta"><span>${fmtDate(r.date)}</span>${r.place?`<span>· ${escapeHtml(r.place)}</span>`:''}</div>
+          </div>
+          <div class="ref-count">${countLabel}</div>
+          <div class="ref-chev">${chevron()}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  return `
+    <header>
+      <div class="row-top">
+        <div>
+          <h1>Archivador de Campo</h1>
+          <div class="count">${state.refs.length} referencia${state.refs.length===1?'':'s'} · guardado en este dispositivo</div>
+        </div>
+        <button class="icon-btn" id="exportAllBtn" aria-label="Exportar registro">${shareIcon()}</button>
+      </div>
+      <div class="search-wrap">
+        ${searchIcon()}
+        <input id="searchInput" type="text" placeholder="Buscar por nombre, lugar o fecha" value="${escapeHtml(state.search)}">
+      </div>
+    </header>
+    <main>${rows}</main>
+    <button class="fab" id="fabAdd" aria-label="Nueva referencia">${plusIcon()}</button>
+  `;
+}
+
+function renderDetailView(){
+  const ref = state.refs.find(r=>r.id===state.activeRefId);
+  if(!ref) return `<div class="empty-state"><p>Referencia no encontrada.</p></div>`;
+  const photos = state.photosByRef[ref.id];
+  let grid = '';
+  if(state.loadingPhotos && !photos){
+    grid = `<div class="spinner"></div>`;
+  } else if(photos && photos.length===0){
+    grid = `<div class="photo-empty">
+      ${iconSvg('camera',34,1.3)}
+      <p>Aún no hay fotos para esta referencia.<br>Toca "Tomar foto" para comenzar.</p>
+    </div>`;
+  } else if(photos){
+    grid = `<div class="photo-grid">${photos.slice().reverse().map(p=>`
+      <div class="photo-thumb" data-photo="${p.id}">
+        <img src="${p.dataUrl}" alt="Foto de ${escapeHtml(ref.name)}">
+      </div>`).join('')}</div>`;
+  }
+
+  return `
+    <div class="detail-header">
+      <div class="back-row" id="backBtn">${backIcon()}<span>Volver</span></div>
+      <div class="detail-title-row">
+        <div class="ref-icon" style="color:${colorHex(ref.color)};width:44px;height:44px;">${iconSvg(ref.icon,21)}</div>
+        <div class="detail-info">
+          <div class="detail-name display">${escapeHtml(ref.name)}</div>
+          <div class="detail-meta">${fmtDate(ref.date)}${ref.place?` · ${escapeHtml(ref.place)}`:''}</div>
+        </div>
+      </div>
+      <div class="detail-actions">
+        <button class="text-btn" id="shareRefBtn">Compartir</button>
+        <button class="text-btn" id="editRefBtn">Editar</button>
+        <button class="text-btn danger" id="deleteRefBtn">Eliminar referencia</button>
+      </div>
+    </div>
+    <div class="capture-row">
+      <button class="capture-main" id="takePhotoBtn" aria-label="Tomar foto">${iconSvg('camera',36,1.6)}</button>
+      <div class="capture-label">Tomar foto</div>
+      <button class="capture-secondary" id="uploadPhotoBtn">${galleryIcon()} Elegir de galería</button>
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple>
+      <input type="file" id="galleryInput" accept="image/*" multiple>
+    </div>
+    ${grid}
+  `;
+}
+
+function renderSheet(){
+  const isEdit = state.showEditSheet;
+  if(!state.showNewSheet && !isEdit) return '';
+  return `
+  <div class="overlay" id="sheetOverlay">
+    <div class="sheet" id="sheetInner">
+      <h2>${isEdit ? 'Editar referencia' : 'Nueva referencia'}</h2>
+      <div class="field">
+        <label for="fName">Nombre o código de referencia</label>
+        <input id="fName" type="text" placeholder="Ej. REF-014" value="${escapeHtml(state.form.name)}">
+      </div>
+      <div class="field">
+        <label for="fDate">Fecha</label>
+        <input id="fDate" type="date" value="${state.form.date}">
+      </div>
+      <div class="field">
+        <label for="fPlace">Lugar</label>
+        <input id="fPlace" type="text" placeholder="Ej. Estación El Roble" value="${escapeHtml(state.form.place)}">
+      </div>
+      <div class="field">
+        <label>Ícono</label>
+        <div class="icon-grid">
+          ${ICON_KEYS.map(k=>`<div class="icon-choice ${state.form.icon===k?'selected':''}" data-icon="${k}">${iconSvg(k,18)}</div>`).join('')}
+        </div>
+      </div>
+      <div class="field">
+        <label>Color</label>
+        <div class="swatch-row">
+          ${COLORS.map(c=>`<div class="swatch ${state.form.color===c.key?'selected':''}" data-color="${c.key}" style="background:${c.hex}"></div>`).join('')}
+        </div>
+      </div>
+      ${state.formError ? `<div class="error-text">${escapeHtml(state.formError)}</div>` : ''}
+      <div class="sheet-actions">
+        <button class="btn" id="cancelSheet">Cancelar</button>
+        <button class="btn primary" id="submitSheet" ${state.saving?'disabled':''}>${state.saving?'Guardando...':'Guardar'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderShareFallback(){
+  if(!state.shareFallbackText) return '';
+  const text = state.shareFallbackText;
+  const wa = 'https://wa.me/?text=' + encodeURIComponent(text);
+  const mail = 'mailto:?subject=' + encodeURIComponent('Archivador de Campo') + '&body=' + encodeURIComponent(text);
+  return `
+  <div class="overlay" id="shareOverlay">
+    <div class="sheet">
+      <h2>Compartir</h2>
+      <div class="sheet-actions" style="flex-direction:column;">
+        <a class="btn" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;" href="${wa}" target="_blank" rel="noopener">${whatsappIcon()} WhatsApp</a>
+        <a class="btn" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin-top:10px;" href="${mail}">${mailIconFull()} Correo</a>
+        <button class="btn" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;" id="copyShareText">${copyIconFull()} Copiar texto</button>
+      </div>
+      <button class="text-btn" id="closeShareFallback" style="margin-top:16px;display:block;">Cerrar</button>
+    </div>
+  </div>`;
+}
+
+function orderedPhotos(refId){
+  return (state.photosByRef[refId]||[]).slice().reverse();
+}
+
+function renderLightbox(){
+  if(!state.lightboxPhoto) return '';
+  const {refId, index} = state.lightboxPhoto;
+  const list = orderedPhotos(refId);
+  if(!list.length) return '';
+  const safeIndex = Math.max(0, Math.min(index, list.length-1));
+  const photo = list[safeIndex];
+  return `
+  <div class="lightbox" id="lightboxOverlay">
+    <div class="lightbox-top">
+      <button class="icon-btn" id="lbClose">${closeIcon('#fff')}</button>
+      <div class="lightbox-counter">${safeIndex+1} / ${list.length}</div>
+      <button class="icon-btn" id="lbDelete">${trashIcon('#fff')}</button>
+    </div>
+    <div class="lightbox-img-wrap" id="lbImgWrap">
+      <button class="lightbox-nav prev" id="lbPrev" ${safeIndex===0?'disabled':''} aria-label="Foto anterior">${chevronLeft()}</button>
+      <img src="${photo.dataUrl}" draggable="false">
+      <button class="lightbox-nav next" id="lbNext" ${safeIndex===list.length-1?'disabled':''} aria-label="Foto siguiente">${chevronRight()}</button>
+    </div>
+    <div class="lightbox-meta">${new Date(photo.ts).toLocaleString('es-CO')}</div>
+  </div>`;
+}
+
+function chevron(){return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`;}
+function plusIcon(){return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`;}
+function backIcon(){return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>`;}
+function searchIcon(){return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>`;}
+function galleryIcon(){return `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>`;}
+function closeIcon(c='currentColor'){return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;}
+function trashIcon(c='currentColor'){return `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>`;}
+function shareIcon(c='currentColor'){return `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.4M8.3 13.3l7.4 4.4"/></svg>`;}
+function chevronLeft(){return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>`;}
+function chevronRight(){return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`;}
+function whatsappIcon(){return `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5.1-1.3A10 10 0 1012 2zm5.8 14.2c-.2.6-1.2 1.2-1.7 1.3-.4.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.6-1.1-4.3-3.8-4.5-4-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9.9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.2.1.3 0 .5-.1.2-.1.3-.3.5-.1.2-.3.4-.4.5-.2.2-.3.4-.1.7.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.5 1.5.2.1.4.1.5-.1.2-.2.7-.8.9-1 .2-.2.3-.2.6-.1.2.1 1.5.7 1.8.9.3.1.4.2.5.3.1.2.1.7-.1 1.3z"/></svg>`;}
+function mailIconFull(){return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`;}
+function copyIconFull(){return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>`;}
+
+function buildRefSummaryText(ref, photoCount){
+  return `Referencia: ${ref.name}\nFecha: ${fmtDate(ref.date)}\nLugar: ${ref.place||'-'}\nFotos registradas: ${photoCount}`;
+}
+function buildFullExportText(){
+  if(!state.refs.length) return 'Archivador de Campo: aún no hay referencias registradas.';
+  const lines = state.refs.map(r=>{
+    const count = state.photosByRef[r.id] ? state.photosByRef[r.id].length : '?';
+    return `• ${r.name} — ${fmtDate(r.date)}${r.place?` — ${r.place}`:''} — ${count} foto(s)`;
+  });
+  return `Archivador de Campo — registro de referencias\n\n${lines.join('\n')}`;
+}
+
+async function dataUrlToFile(dataUrl, filename){
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  return new File([blob], filename, {type: blob.type || 'image/jpeg'});
+}
+
+async function shareRefContent(ref){
+  const photos = state.photosByRef[ref.id] || [];
+  const text = buildRefSummaryText(ref, photos.length);
+  let files = [];
+  try{
+    files = await Promise.all(photos.slice(0,8).map(p => dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))));
+  }catch(e){ files = []; }
+  await shareContent(text, files, photos.length>8);
+}
+
+async function shareContent(text, files, truncated){
+  const fullText = truncated ? text+'\n\n(Se comparten solo las primeras 8 fotos; el resto están en la carpeta de Descargas del celular.)' : text;
+  if(navigator.share){
+    try{
+      const shareData = {text: fullText};
+      if(files && files.length && navigator.canShare && navigator.canShare({files})){
+        shareData.files = files;
+      }
+      await navigator.share(shareData);
+      return;
+    }catch(e){
+      if(e && e.name === 'AbortError') return;
+    }
+  }
+  state.shareFallbackText = fullText;
+  render();
+}
+
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function render(){
+  const app = document.getElementById('app');
+  let html = state.view==='list' ? renderListView() : renderDetailView();
+  html += renderSheet();
+  html += renderLightbox();
+  html += renderShareFallback();
+  if(state.toast) html += `<div class="toast">${escapeHtml(state.toast)}</div>`;
+  app.innerHTML = html;
+  bindEvents();
+}
+
+function bindEvents(){
+  const app = document.getElementById('app');
+
+  const searchInput = document.getElementById('searchInput');
+  if(searchInput){
+    searchInput.addEventListener('input', e=>{ state.search = e.target.value; render(); document.getElementById('searchInput').focus(); document.getElementById('searchInput').setSelectionRange(state.search.length,state.search.length); });
+  }
+  const fab = document.getElementById('fabAdd');
+  if(fab) fab.addEventListener('click', openNewSheet);
+
+  const exportAllBtn = document.getElementById('exportAllBtn');
+  if(exportAllBtn) exportAllBtn.addEventListener('click', ()=> shareContent(buildFullExportText(), [], false));
+
+  app.querySelectorAll('[data-open]').forEach(el=>{
+    el.addEventListener('click', ()=> openRef(el.getAttribute('data-open')));
+  });
+
+  const backBtn = document.getElementById('backBtn');
+  if(backBtn) backBtn.addEventListener('click', goList);
+
+  const shareRefBtn = document.getElementById('shareRefBtn');
+  if(shareRefBtn) shareRefBtn.addEventListener('click', ()=>{
+    const ref = state.refs.find(r=>r.id===state.activeRefId);
+    if(ref) shareRefContent(ref);
+  });
+
+  const editBtn = document.getElementById('editRefBtn');
+  if(editBtn) editBtn.addEventListener('click', ()=>{
+    const ref = state.refs.find(r=>r.id===state.activeRefId);
+    if(ref) openEditSheet(ref);
+  });
+  const delBtn = document.getElementById('deleteRefBtn');
+  if(delBtn) delBtn.addEventListener('click', ()=>{
+    if(confirm('¿Eliminar esta referencia y todas sus fotos? Esta acción no se puede deshacer.')){
+      deleteRef(state.activeRefId);
+    }
+  });
+
+  const takePhotoBtn = document.getElementById('takePhotoBtn');
+  const cameraInput = document.getElementById('cameraInput');
+  if(takePhotoBtn) takePhotoBtn.addEventListener('click', ()=> cameraInput.click());
+  if(cameraInput) cameraInput.addEventListener('change', e=>{
+    if(e.target.files.length) handlePhotoFiles(state.activeRefId, e.target.files);
+    e.target.value='';
+  });
+  const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+  const galleryInput = document.getElementById('galleryInput');
+  if(uploadPhotoBtn) uploadPhotoBtn.addEventListener('click', ()=> galleryInput.click());
+  if(galleryInput) galleryInput.addEventListener('change', e=>{
+    if(e.target.files.length) handlePhotoFiles(state.activeRefId, e.target.files);
+    e.target.value='';
+  });
+
+  app.querySelectorAll('[data-photo]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const pid = el.getAttribute('data-photo');
+      const list = orderedPhotos(state.activeRefId);
+      const idx = list.findIndex(p=>p.id===pid);
+      if(idx>-1){ state.lightboxPhoto = {refId:state.activeRefId, index:idx}; render(); }
+    });
+  });
+
+  // Sheet
+  const overlay = document.getElementById('sheetOverlay');
+  if(overlay){
+    overlay.addEventListener('click', e=>{ if(e.target===overlay) closeSheets(); });
+    document.getElementById('fName').addEventListener('input', e=>{ state.form.name=e.target.value; });
+    document.getElementById('fDate').addEventListener('input', e=>{ state.form.date=e.target.value; });
+    document.getElementById('fPlace').addEventListener('input', e=>{ state.form.place=e.target.value; });
+    app.querySelectorAll('[data-icon]').forEach(el=>{
+      el.addEventListener('click', ()=>{ state.form.icon = el.getAttribute('data-icon'); render(); refocusSheetInputs(); });
+    });
+    app.querySelectorAll('[data-color]').forEach(el=>{
+      el.addEventListener('click', ()=>{ state.form.color = el.getAttribute('data-color'); render(); refocusSheetInputs(); });
+    });
+    document.getElementById('cancelSheet').addEventListener('click', closeSheets);
+    document.getElementById('submitSheet').addEventListener('click', ()=>{
+      state.showEditSheet ? submitEditRef() : submitNewRef();
+    });
+  }
+
+  // Share fallback
+  const shareOverlay = document.getElementById('shareOverlay');
+  if(shareOverlay){
+    shareOverlay.addEventListener('click', e=>{ if(e.target===shareOverlay){ state.shareFallbackText=''; render(); } });
+    document.getElementById('closeShareFallback').addEventListener('click', ()=>{ state.shareFallbackText=''; render(); });
+    document.getElementById('copyShareText').addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(state.shareFallbackText);
+        showToast('Texto copiado');
+      }catch(e){
+        showToast('No se pudo copiar automáticamente. Selecciona el texto manualmente.');
+      }
+    });
+  }
+
+  // Lightbox
+  const lb = document.getElementById('lightboxOverlay');
+  if(lb){
+    document.getElementById('lbClose').addEventListener('click', ()=>{ state.lightboxPhoto=null; render(); });
+    document.getElementById('lbDelete').addEventListener('click', ()=>{
+      if(confirm('¿Eliminar esta foto?')){
+        const {refId, index} = state.lightboxPhoto;
+        const list = orderedPhotos(refId);
+        const photo = list[index];
+        const nextIndex = index >= list.length-1 ? index-1 : index;
+        deletePhoto(refId, photo.id).then(()=>{
+          const newList = orderedPhotos(refId);
+          if(newList.length===0){ state.lightboxPhoto=null; }
+          else { state.lightboxPhoto = {refId, index: Math.max(0, Math.min(nextIndex, newList.length-1))}; }
+          render();
+        });
+      }
+    });
+    const prevBtn = document.getElementById('lbPrev');
+    const nextBtn = document.getElementById('lbNext');
+    const goPrev = ()=>{
+      const {refId, index} = state.lightboxPhoto;
+      if(index>0){ state.lightboxPhoto = {refId, index:index-1}; render(); }
+    };
+    const goNext = ()=>{
+      const {refId, index} = state.lightboxPhoto;
+      const list = orderedPhotos(refId);
+      if(index<list.length-1){ state.lightboxPhoto = {refId, index:index+1}; render(); }
+    };
+    if(prevBtn) prevBtn.addEventListener('click', goPrev);
+    if(nextBtn) nextBtn.addEventListener('click', goNext);
+
+    // Deslizar con el pulgar para pasar de foto
+    const imgWrap = document.getElementById('lbImgWrap');
+    if(imgWrap){
+      let startX=0, startY=0, tracking=false;
+      imgWrap.addEventListener('touchstart', e=>{
+        if(e.touches.length!==1) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        tracking = true;
+      }, {passive:true});
+      imgWrap.addEventListener('touchend', e=>{
+        if(!tracking) return;
+        tracking = false;
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const dx = endX - startX;
+        const dy = endY - startY;
+        if(Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)*1.5){
+          if(dx < 0) goNext(); else goPrev();
+        }
+      }, {passive:true});
+    }
+  }
+}
+
+function refocusSheetInputs(){}
+
+loadRefs();
+render();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
