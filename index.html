@@ -878,45 +878,29 @@ async function dataUrlToFile(dataUrl, filename){
 async function shareRefContent(ref){
   const photos = state.photosByRef[ref.id] || [];
   const text = buildRefSummaryText(ref, photos.length);
-
-  if(!photos.length){
-    await shareContent(text, []);
-    return;
-  }
-
-  showToast('Preparando fotos para compartir...');
+  const LIMIT = 30;
   let files = [];
   try{
-    files = await Promise.all(photos.map(p => dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))));
+    files = await Promise.all(photos.slice(0,LIMIT).map(p => dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))));
   }catch(e){ files = []; }
-
-  await shareContent(text, files);
+  await shareContent(text, files, photos.length>LIMIT, LIMIT);
 }
 
-async function shareContent(text, files){
-  const hasFiles = files && files.length > 0;
-  const fallbackNote = '\n\n(Este celular no permitió adjuntar las fotos por esta vía; ya están guardadas en la carpeta de Descargas y puede enviarlas desde allí.)';
-
+async function shareContent(text, files, truncated, limit){
+  const fullText = truncated ? text+`\n\n(Se comparten las primeras ${limit} fotos; el resto están en la carpeta de Descargas del celular.)` : text;
   if(navigator.share){
-    // Intento 1: con las fotos adjuntas
-    if(hasFiles){
-      try{
-        await navigator.share({text, files});
-        return;
-      }catch(e){
-        if(e && e.name === 'AbortError') return; // el usuario canceló, no seguir intentando
-        // si el error es por no poder adjuntar archivos, seguimos al intento de solo texto
-      }
-    }
-    // Intento 2: solo texto (sin fotos)
     try{
-      await navigator.share({text: hasFiles ? text+fallbackNote : text});
+      const shareData = {text: fullText};
+      if(files && files.length && navigator.canShare && navigator.canShare({files})){
+        shareData.files = files;
+      }
+      await navigator.share(shareData);
       return;
     }catch(e){
       if(e && e.name === 'AbortError') return;
     }
   }
-  state.shareFallbackText = hasFiles ? text+fallbackNote : text;
+  state.shareFallbackText = fullText;
   render();
 }
 
