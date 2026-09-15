@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="Archivador">
 <link rel="manifest" href="manifest.json">
 
+
 <style>
   :root{
     --ink:#1E2624;
@@ -879,50 +880,43 @@ async function shareRefContent(ref){
   const text = buildRefSummaryText(ref, photos.length);
 
   if(!photos.length){
-    await shareContent(text, [], false);
+    await shareContent(text, []);
     return;
   }
 
   showToast('Preparando fotos para compartir...');
-  let allFiles = [];
+  let files = [];
   try{
-    allFiles = await Promise.all(photos.map(p => dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))));
-  }catch(e){ allFiles = []; }
+    files = await Promise.all(photos.map(p => dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))));
+  }catch(e){ files = []; }
 
-  // Intenta compartir todas las fotos; si el celular no lo permite (paquete
-  // demasiado pesado o demasiados archivos), reduce la cantidad automáticamente.
-  const attemptSizes = [allFiles.length, 40, 20, 10, 5, 1, 0].filter((n,i,arr)=> n<=allFiles.length && arr.indexOf(n)===i);
-  for(const n of attemptSizes){
-    const subset = allFiles.slice(0, n);
-    const canDoIt = n===0 || (navigator.canShare && navigator.canShare({files: subset}));
-    if(canDoIt){
-      await shareContent(text, subset, n < allFiles.length);
-      return;
-    }
-  }
-  await shareContent(text, [], allFiles.length>0);
+  await shareContent(text, files);
 }
 
-async function shareContent(text, files, truncated){
-  let fullText = text;
-  if(truncated && files.length>0){
-    fullText = text+`\n\n(Se comparten ${files.length} de las fotos; el resto están en la carpeta de Descargas del celular.)`;
-  } else if(truncated && files.length===0){
-    fullText = text+`\n\n(El celular no permitió adjuntar las fotos en este envío; están todas en la carpeta de Descargas.)`;
-  }
+async function shareContent(text, files){
+  const hasFiles = files && files.length > 0;
+  const fallbackNote = '\n\n(Este celular no permitió adjuntar las fotos por esta vía; ya están guardadas en la carpeta de Descargas y puede enviarlas desde allí.)';
+
   if(navigator.share){
-    try{
-      const shareData = {text: fullText};
-      if(files && files.length && navigator.canShare && navigator.canShare({files})){
-        shareData.files = files;
+    // Intento 1: con las fotos adjuntas
+    if(hasFiles){
+      try{
+        await navigator.share({text, files});
+        return;
+      }catch(e){
+        if(e && e.name === 'AbortError') return; // el usuario canceló, no seguir intentando
+        // si el error es por no poder adjuntar archivos, seguimos al intento de solo texto
       }
-      await navigator.share(shareData);
+    }
+    // Intento 2: solo texto (sin fotos)
+    try{
+      await navigator.share({text: hasFiles ? text+fallbackNote : text});
       return;
     }catch(e){
       if(e && e.name === 'AbortError') return;
     }
   }
-  state.shareFallbackText = fullText;
+  state.shareFallbackText = hasFiles ? text+fallbackNote : text;
   render();
 }
 
@@ -952,7 +946,7 @@ function bindEvents(){
   if(fab) fab.addEventListener('click', openNewSheet);
 
   const exportAllBtn = document.getElementById('exportAllBtn');
-  if(exportAllBtn) exportAllBtn.addEventListener('click', ()=> shareContent(buildFullExportText(), [], false));
+  if(exportAllBtn) exportAllBtn.addEventListener('click', ()=> shareContent(buildFullExportText(), []));
 
   app.querySelectorAll('[data-open]').forEach(el=>{
     el.addEventListener('click', ()=> openRef(el.getAttribute('data-open')));
