@@ -12,7 +12,6 @@
 <meta name="apple-mobile-web-app-title" content="Archivador">
 <link rel="manifest" href="manifest.json">
 
-
 <style>
   :root{
     --ink:#1E2624;
@@ -878,16 +877,15 @@ async function dataUrlToFile(dataUrl, filename){
 async function shareRefContent(ref){
   const photos = state.photosByRef[ref.id] || [];
   const text = buildRefSummaryText(ref, photos.length);
-  const LIMIT = 30;
   let files = [];
   try{
-    files = await Promise.all(photos.slice(0,LIMIT).map(p => dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))));
+    files = await Promise.all(photos.slice(0,8).map(p => dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))));
   }catch(e){ files = []; }
-  await shareContent(text, files, photos.length>LIMIT, LIMIT);
+  await shareContent(text, files, photos.length>8);
 }
 
-async function shareContent(text, files, truncated, limit){
-  const fullText = truncated ? text+`\n\n(Se comparten las primeras ${limit} fotos; el resto están en la carpeta de Descargas del celular.)` : text;
+async function shareContent(text, files, truncated){
+  const fullText = truncated ? text+'\n\n(Se comparten solo las primeras 8 fotos; el resto están en la carpeta de Descargas del celular.)' : text;
   if(navigator.share){
     try{
       const shareData = {text: fullText};
@@ -930,7 +928,7 @@ function bindEvents(){
   if(fab) fab.addEventListener('click', openNewSheet);
 
   const exportAllBtn = document.getElementById('exportAllBtn');
-  if(exportAllBtn) exportAllBtn.addEventListener('click', ()=> shareContent(buildFullExportText(), []));
+  if(exportAllBtn) exportAllBtn.addEventListener('click', ()=> shareContent(buildFullExportText(), [], false));
 
   app.querySelectorAll('[data-open]').forEach(el=>{
     el.addEventListener('click', ()=> openRef(el.getAttribute('data-open')));
