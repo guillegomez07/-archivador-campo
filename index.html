@@ -885,7 +885,7 @@ async function shareRefContent(ref){
 }
 
 async function shareContent(text, files, truncated){
-  const fullText = truncated ? text+'\n\n(Se comparten solo las primeras 20 fotos; el resto están en la carpeta de Descargas del celular.)' : text;
+  const fullText = truncated ? text+'\n\n(Se comparten solo las primeras 20 fotos.)' : text;
   if(navigator.share){
     try{
       const shareData = {text: fullText};
