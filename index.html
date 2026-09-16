@@ -879,13 +879,13 @@ async function shareRefContent(ref){
   const text = buildRefSummaryText(ref, photos.length);
   let files = [];
   try{
-    files = await Promise.all(photos.slice(0,25).map(p => dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))));
+    files = await Promise.all(photos.slice(0,10).map(p => dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))));
   }catch(e){ files = []; }
-  await shareContent(text, files, photos.length>25);
+  await shareContent(text, files, photos.length>10);
 }
 
 async function shareContent(text, files, truncated){
-  const fullText = truncated ? text+'\n\n(Se comparten solo las primeras fotos; el resto están en la carpeta de Descargas del celular.)' : text;
+  const fullText = truncated ? text+'\n\n(Se comparten solo las primeras 10 fotos; el resto están en la carpeta de Descargas del celular.)' : text;
   if(navigator.share){
     try{
       const shareData = {text: fullText};
