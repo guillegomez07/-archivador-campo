@@ -192,6 +192,9 @@
     cursor:pointer;
   }
   .capture-main:active{transform:scale(0.96);}
+  .capture-main.video{background:var(--rust);width:76px;height:76px;}
+  .capture-options{display:flex;align-items:flex-end;gap:26px;}
+  .capture-option{display:flex;flex-direction:column;align-items:center;gap:8px;}
   .capture-label{
     font-family:Georgia, 'Times New Roman', serif;font-weight:600;font-size:14.5px;
     color:var(--ink);margin-top:2px;
@@ -233,6 +236,12 @@
     background:var(--panel);
   }
   .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .video-badge{
+    position:absolute;bottom:5px;right:5px;
+    width:22px;height:22px;border-radius:50%;
+    background:rgba(10,14,13,0.6);
+    display:flex;align-items:center;justify-content:center;
+  }
   .photo-empty{padding:50px 30px;text-align:center;color:var(--ink-soft);}
   .photo-empty p{font-size:13.5px;line-height:1.5;margin:10px 0 0;}
 
@@ -307,6 +316,7 @@
   .lightbox-counter{color:#DCD8C8;font-size:12.5px;align-self:center;}
   .lightbox-img-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:0 10px;position:relative;touch-action:pan-y;}
   .lightbox-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;user-select:none;-webkit-user-drag:none;}
+  .lightbox-img-wrap video{max-width:100%;max-height:100%;border-radius:4px;}
   .lightbox-nav{
     position:absolute;top:50%;transform:translateY(-50%);
     width:46px;height:46px;border-radius:50%;
@@ -398,6 +408,20 @@ function slug(s){
 
 /* ---------- Almacenamiento local del dispositivo (IndexedDB) ---------- */
 let dbPromise = null;
+let videoObjectUrls = {};
+function getVideoObjectUrl(photo){
+  if(!photo.blob) return '';
+  if(!videoObjectUrls[photo.id]){
+    videoObjectUrls[photo.id] = URL.createObjectURL(photo.blob);
+  }
+  return videoObjectUrls[photo.id];
+}
+function revokeVideoObjectUrl(photoId){
+  if(videoObjectUrls[photoId]){
+    URL.revokeObjectURL(videoObjectUrls[photoId]);
+    delete videoObjectUrls[photoId];
+  }
+}
 function openDb(){
   if(dbPromise) return dbPromise;
   dbPromise = new Promise((resolve,reject)=>{
@@ -538,28 +562,110 @@ function compressImage(file){
   });
 }
 
-async function handlePhotoFiles(refId, fileList){
+function videoExt(mime){
+  if(!mime) return 'mp4';
+  if(mime.includes('quicktime')) return 'mov';
+  if(mime.includes('webm')) return 'webm';
+  if(mime.includes('3gpp')) return '3gp';
+  return 'mp4';
+}
+
+function videoPlaceholderDataUrl(){
+  const canvas = document.createElement('canvas');
+  canvas.width = 400; canvas.height = 300;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#2A322F';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.beginPath();
+  ctx.moveTo(canvas.width/2-30, canvas.height/2-45);
+  ctx.lineTo(canvas.width/2-30, canvas.height/2+45);
+  ctx.lineTo(canvas.width/2+45, canvas.height/2);
+  ctx.closePath();
+  ctx.fill();
+  return canvas.toDataURL('image/jpeg', 0.7);
+}
+
+function captureVideoThumbnail(file){
+  return new Promise((resolve)=>{
+    const video = document.createElement('video');
+    video.preload = 'auto';
+    video.muted = true;
+    video.playsInline = true;
+    let settled = false;
+    const url = URL.createObjectURL(file);
+    video.src = url;
+    const finish = (dataUrl)=>{
+      if(settled) return;
+      settled = true;
+      clearTimeout(fallbackTimer);
+      URL.revokeObjectURL(url);
+      resolve(dataUrl);
+    };
+    const fallbackTimer = setTimeout(()=> finish(videoPlaceholderDataUrl()), 4000);
+    video.onloadedmetadata = () => {
+      const d = video.duration;
+      const seekTime = (isFinite(d) && d>0) ? Math.min(0.5, d/2) : 0.1;
+      try{ video.currentTime = seekTime; }catch(e){ finish(videoPlaceholderDataUrl()); }
+    };
+    video.onseeked = () => {
+      try{
+        const maxDim = 1000;
+        let w = video.videoWidth||640, h = video.videoHeight||360;
+        if(w>h && w>maxDim){ h = h*(maxDim/w); w = maxDim; }
+        else if(h>maxDim){ w = w*(maxDim/h); h = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, w, h);
+        finish(canvas.toDataURL('image/jpeg', 0.6));
+      }catch(e){ finish(videoPlaceholderDataUrl()); }
+    };
+    video.onerror = () => finish(videoPlaceholderDataUrl());
+  });
+}
+
+async function handleMediaFiles(refId, fileList){
   const files = Array.from(fileList);
   if(!files.length) return;
   const ref = state.refs.find(r=>r.id===refId);
-  showToast(files.length>1 ? 'Guardando fotos en el dispositivo...' : 'Guardando foto en el dispositivo...');
+  const hasVideo = files.some(f=>(f.type||'').startsWith('video/'));
+  const hasPhoto = files.some(f=>!(f.type||'').startsWith('video/'));
+  let startLabel;
+  if(hasVideo && hasPhoto) startLabel = 'Guardando archivos en el dispositivo...';
+  else if(hasVideo) startLabel = files.length>1 ? 'Guardando videos en el dispositivo...' : 'Guardando video en el dispositivo...';
+  else startLabel = files.length>1 ? 'Guardando fotos en el dispositivo...' : 'Guardando foto en el dispositivo...';
+  showToast(startLabel);
   if(!state.photosByRef[refId]) state.photosByRef[refId] = [];
   const existingCount = state.photosByRef[refId].length;
   let i = 0;
   for(const file of files){
     i++;
+    const isVideo = (file.type||'').startsWith('video/');
     try{
-      const thumbUrl = await compressImage(file);
-      const ext = (file.type && file.type.includes('png')) ? 'png' : 'jpg';
-      const filename = `${slug(ref.name)}_${ref.date}_${slug(ref.place)}_${existingCount+i}.${ext}`;
-      const photo = {id:uid(), refId, dataUrl:thumbUrl, ts:Date.now(), filename};
-      state.photosByRef[refId].push(photo);
-      await savePhotoRecord(photo);
-      downloadOriginalFile(file, filename);
+      let record;
+      if(isVideo){
+        const thumbUrl = await captureVideoThumbnail(file);
+        const ext = videoExt(file.type);
+        const filename = `${slug(ref.name)}_${ref.date}_${slug(ref.place)}_${existingCount+i}.${ext}`;
+        record = {id:uid(), refId, type:'video', dataUrl:thumbUrl, blob:file, ts:Date.now(), filename};
+      } else {
+        const thumbUrl = await compressImage(file);
+        const ext = (file.type && file.type.includes('png')) ? 'png' : 'jpg';
+        const filename = `${slug(ref.name)}_${ref.date}_${slug(ref.place)}_${existingCount+i}.${ext}`;
+        record = {id:uid(), refId, type:'photo', dataUrl:thumbUrl, ts:Date.now(), filename};
+      }
+      state.photosByRef[refId].push(record);
+      await savePhotoRecord(record);
+      downloadOriginalFile(file, record.filename);
     }catch(e){ /* omitir archivo con error */ }
   }
   render();
-  showToast(files.length>1 ? 'Fotos guardadas en Descargas' : 'Foto guardada en Descargas');
+  let endLabel;
+  if(hasVideo && hasPhoto) endLabel = 'Archivos guardados en Descargas';
+  else if(hasVideo) endLabel = files.length>1 ? 'Videos guardados en Descargas' : 'Video guardado en Descargas';
+  else endLabel = files.length>1 ? 'Fotos guardadas en Descargas' : 'Foto guardada en Descargas';
+  showToast(endLabel);
 }
 
 function openNewSheet(){
@@ -615,6 +721,7 @@ async function submitEditRef(){
 }
 
 async function deleteRef(refId){
+  (state.photosByRef[refId]||[]).forEach(p=>{ if(p.type==='video') revokeVideoObjectUrl(p.id); });
   state.refs = state.refs.filter(r=>r.id!==refId);
   await idbDelete('refs', refId);
   await idbDeleteByIndex('photos','refId',refId);
@@ -626,6 +733,7 @@ async function deleteRef(refId){
 }
 
 async function deletePhoto(refId, photoId){
+  revokeVideoObjectUrl(photoId);
   state.photosByRef[refId] = (state.photosByRef[refId]||[]).filter(p=>p.id!==photoId);
   render();
   await idbDelete('photos', photoId);
@@ -675,7 +783,7 @@ function renderListView(){
   } else {
     rows = refs.map(r=>{
       const count = state.photosByRef[r.id] ? state.photosByRef[r.id].length : null;
-      const countLabel = count===null ? '' : (count===1?'1 foto':count+' fotos');
+      const countLabel = count===null ? '' : (count===1?'1 archivo':count+' archivos');
       return `<div class="ref-row" data-open="${r.id}">
         <div class="ref-bar" style="background:${colorHex(r.color)}"></div>
         <div class="ref-body">
@@ -720,12 +828,13 @@ function renderDetailView(){
   } else if(photos && photos.length===0){
     grid = `<div class="photo-empty">
       ${iconSvg('camera',34,1.3)}
-      <p>Aún no hay fotos para esta referencia.<br>Toca "Tomar foto" para comenzar.</p>
+      <p>Aún no hay fotos ni videos para esta referencia.<br>Toca "Tomar foto" o "Grabar video" para comenzar.</p>
     </div>`;
   } else if(photos){
     grid = `<div class="photo-grid">${photos.slice().reverse().map(p=>`
       <div class="photo-thumb" data-photo="${p.id}">
-        <img src="${p.dataUrl}" alt="Foto de ${escapeHtml(ref.name)}">
+        <img src="${p.dataUrl}" alt="${p.type==='video'?'Video':'Foto'} de ${escapeHtml(ref.name)}">
+        ${p.type==='video' ? `<div class="video-badge">${playIcon()}</div>` : ''}
       </div>`).join('')}</div>`;
   }
 
@@ -746,11 +855,20 @@ function renderDetailView(){
       </div>
     </div>
     <div class="capture-row">
-      <button class="capture-main" id="takePhotoBtn" aria-label="Tomar foto">${iconSvg('camera',36,1.6)}</button>
-      <div class="capture-label">Tomar foto</div>
+      <div class="capture-options">
+        <div class="capture-option">
+          <button class="capture-main" id="takePhotoBtn" aria-label="Tomar foto">${iconSvg('camera',36,1.6)}</button>
+          <div class="capture-label">Tomar foto</div>
+        </div>
+        <div class="capture-option">
+          <button class="capture-main video" id="takeVideoBtn" aria-label="Grabar video">${videoIcon(30,1.7,'#fff')}</button>
+          <div class="capture-label">Grabar video</div>
+        </div>
+      </div>
       <button class="capture-secondary" id="uploadPhotoBtn">${galleryIcon()} Elegir de galería</button>
       <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple>
-      <input type="file" id="galleryInput" accept="image/*" multiple>
+      <input type="file" id="videoCameraInput" accept="video/*" capture="environment">
+      <input type="file" id="galleryInput" accept="image/*,video/*" multiple>
     </div>
     ${grid}
   `;
@@ -826,6 +944,10 @@ function renderLightbox(){
   if(!list.length) return '';
   const safeIndex = Math.max(0, Math.min(index, list.length-1));
   const photo = list[safeIndex];
+  const isVideo = photo.type === 'video';
+  const mediaHtml = (isVideo && photo.blob)
+    ? `<video src="${getVideoObjectUrl(photo)}" poster="${photo.dataUrl}" controls playsinline draggable="false"></video>`
+    : `<img src="${photo.dataUrl}" draggable="false">`;
   return `
   <div class="lightbox" id="lightboxOverlay">
     <div class="lightbox-top">
@@ -834,11 +956,11 @@ function renderLightbox(){
       <button class="icon-btn" id="lbDelete">${trashIcon('#fff')}</button>
     </div>
     <div class="lightbox-img-wrap" id="lbImgWrap">
-      <button class="lightbox-nav prev" id="lbPrev" ${safeIndex===0?'disabled':''} aria-label="Foto anterior">${chevronLeft()}</button>
-      <img src="${photo.dataUrl}" draggable="false">
-      <button class="lightbox-nav next" id="lbNext" ${safeIndex===list.length-1?'disabled':''} aria-label="Foto siguiente">${chevronRight()}</button>
+      <button class="lightbox-nav prev" id="lbPrev" ${safeIndex===0?'disabled':''} aria-label="Elemento anterior">${chevronLeft()}</button>
+      ${mediaHtml}
+      <button class="lightbox-nav next" id="lbNext" ${safeIndex===list.length-1?'disabled':''} aria-label="Elemento siguiente">${chevronRight()}</button>
     </div>
-    <div class="lightbox-meta">${new Date(photo.ts).toLocaleString('es-CO')}</div>
+    <div class="lightbox-meta">${new Date(photo.ts).toLocaleString('es-CO')}${isVideo?' · Video':''}</div>
   </div>`;
 }
 
@@ -847,6 +969,8 @@ function plusIcon(){return `<svg width="24" height="24" viewBox="0 0 24 24" fill
 function backIcon(){return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>`;}
 function searchIcon(){return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>`;}
 function galleryIcon(){return `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>`;}
+function videoIcon(size=32,strokeW=1.6,c='currentColor'){return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="${strokeW}" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="15" height="12" rx="2"/><path d="M17 10l5-3v10l-5-3"/></svg>`;}
+function playIcon(c='#fff'){return `<svg width="11" height="11" viewBox="0 0 24 24" fill="${c}"><path d="M8 5v14l11-7z"/></svg>`;}
 function closeIcon(c='currentColor'){return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;}
 function trashIcon(c='currentColor'){return `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>`;}
 function shareIcon(c='currentColor'){return `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.4M8.3 13.3l7.4 4.4"/></svg>`;}
@@ -856,14 +980,14 @@ function whatsappIcon(){return `<svg width="20" height="20" viewBox="0 0 24 24" 
 function mailIconFull(){return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`;}
 function copyIconFull(){return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>`;}
 
-function buildRefSummaryText(ref, photoCount){
-  return `Referencia: ${ref.name}\nFecha: ${fmtDate(ref.date)}\nLugar: ${ref.place||'-'}\nFotos registradas: ${photoCount}`;
+function buildRefSummaryText(ref, itemCount){
+  return `Referencia: ${ref.name}\nFecha: ${fmtDate(ref.date)}\nLugar: ${ref.place||'-'}\nFotos y videos registrados: ${itemCount}`;
 }
 function buildFullExportText(){
   if(!state.refs.length) return 'Archivador de Campo: aún no hay referencias registradas.';
   const lines = state.refs.map(r=>{
     const count = state.photosByRef[r.id] ? state.photosByRef[r.id].length : '?';
-    return `• ${r.name} — ${fmtDate(r.date)}${r.place?` — ${r.place}`:''} — ${count} foto(s)`;
+    return `• ${r.name} — ${fmtDate(r.date)}${r.place?` — ${r.place}`:''} — ${count} archivo(s)`;
   });
   return `Archivador de Campo — registro de referencias\n\n${lines.join('\n')}`;
 }
@@ -875,17 +999,21 @@ async function dataUrlToFile(dataUrl, filename){
 }
 
 async function shareRefContent(ref){
-  const photos = state.photosByRef[ref.id] || [];
-  const text = buildRefSummaryText(ref, photos.length);
+  const items = state.photosByRef[ref.id] || [];
+  const text = buildRefSummaryText(ref, items.length);
   let files = [];
   try{
-    files = await Promise.all(photos.slice(0,20).map(p => dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))));
+    files = await Promise.all(items.slice(0,8).map(p =>
+      (p.type==='video' && p.blob)
+        ? Promise.resolve(new File([p.blob], p.filename || (p.id+'.mp4'), {type: p.blob.type || 'video/mp4'}))
+        : dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))
+    ));
   }catch(e){ files = []; }
-  await shareContent(text, files, photos.length>20);
+  await shareContent(text, files, items.length>8);
 }
 
 async function shareContent(text, files, truncated){
-  const fullText = truncated ? text+'\n\n(Se comparten solo las primeras 20 fotos.)' : text;
+  const fullText = truncated ? text+'\n\n(Se comparten solo los primeros 8 archivos; el resto están en la carpeta de Descargas del celular.)' : text;
   if(navigator.share){
     try{
       const shareData = {text: fullText};
@@ -959,14 +1087,21 @@ function bindEvents(){
   const cameraInput = document.getElementById('cameraInput');
   if(takePhotoBtn) takePhotoBtn.addEventListener('click', ()=> cameraInput.click());
   if(cameraInput) cameraInput.addEventListener('change', e=>{
-    if(e.target.files.length) handlePhotoFiles(state.activeRefId, e.target.files);
+    if(e.target.files.length) handleMediaFiles(state.activeRefId, e.target.files);
+    e.target.value='';
+  });
+  const takeVideoBtn = document.getElementById('takeVideoBtn');
+  const videoCameraInput = document.getElementById('videoCameraInput');
+  if(takeVideoBtn) takeVideoBtn.addEventListener('click', ()=> videoCameraInput.click());
+  if(videoCameraInput) videoCameraInput.addEventListener('change', e=>{
+    if(e.target.files.length) handleMediaFiles(state.activeRefId, e.target.files);
     e.target.value='';
   });
   const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
   const galleryInput = document.getElementById('galleryInput');
   if(uploadPhotoBtn) uploadPhotoBtn.addEventListener('click', ()=> galleryInput.click());
   if(galleryInput) galleryInput.addEventListener('change', e=>{
-    if(e.target.files.length) handlePhotoFiles(state.activeRefId, e.target.files);
+    if(e.target.files.length) handleMediaFiles(state.activeRefId, e.target.files);
     e.target.value='';
   });
 
