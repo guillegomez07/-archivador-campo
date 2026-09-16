@@ -1003,17 +1003,17 @@ async function shareRefContent(ref){
   const text = buildRefSummaryText(ref, items.length);
   let files = [];
   try{
-    files = await Promise.all(items.slice(0,8).map(p =>
+    files = await Promise.all(items.slice(0,15).map(p =>
       (p.type==='video' && p.blob)
         ? Promise.resolve(new File([p.blob], p.filename || (p.id+'.mp4'), {type: p.blob.type || 'video/mp4'}))
         : dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))
     ));
   }catch(e){ files = []; }
-  await shareContent(text, files, items.length>8);
+  await shareContent(text, files, items.length>15);
 }
 
 async function shareContent(text, files, truncated){
-  const fullText = truncated ? text+'\n\n(Se comparten solo los primeros 8 archivos; el resto están en la carpeta de Descargas del celular.)' : text;
+  const fullText = truncated ? text+'\n\n(Se comparten solo los primeros 15 archivos.)' : text;
   if(navigator.share){
     try{
       const shareData = {text: fullText};
