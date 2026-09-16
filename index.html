@@ -388,7 +388,8 @@ let state = {
   saving: false,
   formError: '',
   lightboxPhoto: null,
-  toast: ''
+  toast: '',
+  shareQueue: null
 };
 
 function todayISO(){
@@ -914,6 +915,25 @@ function renderSheet(){
   </div>`;
 }
 
+function renderShareBatchPrompt(){
+  const q = state.shareQueue;
+  if(!q || q.sent >= q.batches.length-1) return '';
+  const sentCount = q.sent+1;
+  return `
+  <div class="overlay" id="shareBatchOverlay">
+    <div class="sheet">
+      <h2>Compartir por lotes</h2>
+      <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.5;margin:0 0 18px;">
+        Lote ${sentCount} de ${q.batches.length} enviado. Debido al límite del dispositivo para compartir varios archivos a la vez, el resto se envía en lotes adicionales.
+      </p>
+      <div class="sheet-actions">
+        <button class="btn" id="stopShareBatch">Detener</button>
+        <button class="btn primary" id="continueShareBatch">Continuar (lote ${sentCount+1} de ${q.batches.length})</button>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderShareFallback(){
   if(!state.shareFallbackText) return '';
   const text = state.shareFallbackText;
@@ -998,36 +1018,80 @@ async function dataUrlToFile(dataUrl, filename){
   return new File([blob], filename, {type: blob.type || 'image/jpeg'});
 }
 
-async function shareRefContent(ref){
-  const items = state.photosByRef[ref.id] || [];
-  const text = buildRefSummaryText(ref, items.length);
-  let files = [];
-  try{
-    files = await Promise.all(items.slice(0,15).map(p =>
-      (p.type==='video' && p.blob)
-        ? Promise.resolve(new File([p.blob], p.filename || (p.id+'.mp4'), {type: p.blob.type || 'video/mp4'}))
-        : dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'))
-    ));
-  }catch(e){ files = []; }
-  await shareContent(text, files, items.length>15);
+const SHARE_BATCH_SIZE = 8;
+
+function buildMediaFile(p){
+  return (p.type==='video' && p.blob)
+    ? Promise.resolve(new File([p.blob], p.filename || (p.id+'.mp4'), {type: p.blob.type || 'video/mp4'}))
+    : dataUrlToFile(p.dataUrl, p.filename || (p.id+'.jpg'));
 }
 
-async function shareContent(text, files, truncated){
-  const fullText = truncated ? text+'\n\n(Se comparten solo los primeros 15 archivos.)' : text;
+/* Inicia el envío de una referencia; si hay más de SHARE_BATCH_SIZE archivos,
+   los agrupa en lotes y pide confirmación del usuario entre cada uno (varias
+   hojas de compartir consecutivas), ya que el sistema operativo exige un toque
+   directo del usuario para abrir cada hoja de compartir. */
+async function shareRefContent(ref){
+  const items = state.photosByRef[ref.id] || [];
+  if(!items.length){
+    await shareContent(buildRefSummaryText(ref, 0), []);
+    return;
+  }
+  if(!(navigator.share && navigator.canShare)){
+    // Este navegador no puede adjuntar archivos al compartir; se envía solo el resumen.
+    await shareContent(buildRefSummaryText(ref, items.length), []);
+    return;
+  }
+  const batches = [];
+  for(let i=0;i<items.length;i+=SHARE_BATCH_SIZE) batches.push(items.slice(i,i+SHARE_BATCH_SIZE));
+  state.shareQueue = {ref, batches, sent:-1};
+  await runNextShareBatch();
+}
+
+async function runNextShareBatch(){
+  const q = state.shareQueue;
+  if(!q) return;
+  const nextIndex = q.sent + 1;
+  const batch = q.batches[nextIndex];
+  let files = [];
+  try{ files = await Promise.all(batch.map(buildMediaFile)); }catch(e){ files = []; }
+  if(!navigator.canShare({files})) files = [];
+  const total = (state.photosByRef[q.ref.id] || []).length;
+  const text = q.batches.length>1
+    ? `${buildRefSummaryText(q.ref, total)}\n\n(Lote ${nextIndex+1} de ${q.batches.length} — ${batch.length} archivo(s) de esta referencia.)`
+    : buildRefSummaryText(q.ref, total);
+  const result = await shareContent(text, files);
+  if(result==='cancelled'){
+    state.shareQueue = null;
+    if(nextIndex < q.batches.length-1) showToast('Envío cancelado. El resto sigue disponible en Descargas.');
+    return;
+  }
+  q.sent = nextIndex;
+  if(q.sent < q.batches.length-1){
+    render(); // muestra el aviso para continuar con el siguiente lote
+  } else {
+    state.shareQueue = null;
+  }
+}
+
+/* Comparte texto (y opcionalmente archivos) con la hoja nativa del dispositivo.
+   Devuelve 'shared', 'cancelled' (el usuario cerró la hoja) o 'fallback' (no hay
+   soporte de Web Share, se mostró el respaldo con WhatsApp/correo/copiar). */
+async function shareContent(text, files){
   if(navigator.share){
     try{
-      const shareData = {text: fullText};
+      const shareData = {text};
       if(files && files.length && navigator.canShare && navigator.canShare({files})){
         shareData.files = files;
       }
       await navigator.share(shareData);
-      return;
+      return 'shared';
     }catch(e){
-      if(e && e.name === 'AbortError') return;
+      if(e && e.name === 'AbortError') return 'cancelled';
     }
   }
-  state.shareFallbackText = fullText;
+  state.shareFallbackText = text;
   render();
+  return 'fallback';
 }
 
 function escapeHtml(s){
@@ -1039,6 +1103,7 @@ function render(){
   let html = state.view==='list' ? renderListView() : renderDetailView();
   html += renderSheet();
   html += renderLightbox();
+  html += renderShareBatchPrompt();
   html += renderShareFallback();
   if(state.toast) html += `<div class="toast">${escapeHtml(state.toast)}</div>`;
   app.innerHTML = html;
@@ -1056,7 +1121,7 @@ function bindEvents(){
   if(fab) fab.addEventListener('click', openNewSheet);
 
   const exportAllBtn = document.getElementById('exportAllBtn');
-  if(exportAllBtn) exportAllBtn.addEventListener('click', ()=> shareContent(buildFullExportText(), [], false));
+  if(exportAllBtn) exportAllBtn.addEventListener('click', ()=> shareContent(buildFullExportText(), []));
 
   app.querySelectorAll('[data-open]').forEach(el=>{
     el.addEventListener('click', ()=> openRef(el.getAttribute('data-open')));
@@ -1131,6 +1196,15 @@ function bindEvents(){
     document.getElementById('submitSheet').addEventListener('click', ()=>{
       state.showEditSheet ? submitEditRef() : submitNewRef();
     });
+  }
+
+  // Compartir por lotes
+  const shareBatchOverlay = document.getElementById('shareBatchOverlay');
+  if(shareBatchOverlay){
+    const stopBtn = document.getElementById('stopShareBatch');
+    const continueBtn = document.getElementById('continueShareBatch');
+    if(stopBtn) stopBtn.addEventListener('click', ()=>{ state.shareQueue = null; render(); });
+    if(continueBtn) continueBtn.addEventListener('click', ()=>{ runNextShareBatch(); });
   }
 
   // Share fallback
